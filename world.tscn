@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://bul763k6bjokv"]
+
+[ext_resource type="Shader" path="res://water.gdshader" id="1_awqgb"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7gokt"]
+render_priority = 0
+shader = ExtResource("1_awqgb")
+shader_parameter/albedo = Color(0, 0.65098, 0.866667, 1)
+shader_parameter/exponent = 4.0
+shader_parameter/speeds = PackedFloat32Array(5.631, 8.665, 3.95, 3.575)
+shader_parameter/amplitudes = PackedFloat32Array(0.7, 0.735, 0.47, 0.485)
+shader_parameter/wavelengths = PackedFloat32Array(9.12, 9.66, 8.805, 16.835)
+shader_parameter/wind_directions = PackedInt32Array(35, 170, 85, -79)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_lqahc"]
+size = Vector2(50, 50)
+subdivide_width = 1000
+subdivide_depth = 1000
+
+[node name="World" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.862858, 0.505447, 0, -0.505447, 0.862858, 0, 10.2334, 22.0296)
+
+[node name="Water" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_7gokt")
+mesh = SubResource("PlaneMesh_lqahc")
+
+[node name="SunLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.433659, -0.344827, 0.832487, 0, 0.92388, 0.382683, -0.901077, -0.165954, 0.400649, 0, 15.0347, 0)
