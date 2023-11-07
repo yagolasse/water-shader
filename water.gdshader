@@ -1,6 +1,16 @@
 shader_type spatial;
 
+group_uniforms light_parameters;
+
+uniform vec3 albedo : source_color;
+uniform float rim : hint_range(0.0, 1.0, 0.1);
+uniform float roughness : hint_range(0.0, 1.0, 0.005);
+uniform float metallic : hint_range(0.0, 1.0, 0.1);
+
+group_uniforms vertex_parameters;
+
 uniform float max_peak : hint_range(0.0, 10.0, 0.1);
+uniform float peak_offset : hint_range(0.5, 2.0, 0.1);
 uniform float wave_drag : hint_range(0.0, 30.0, 0.1);
 uniform float initial_speed : hint_range(3.0, 6.0, 0.1);
 uniform float speed_multiplier : hint_range(0.8, 1.0, 0.01);
@@ -12,14 +22,10 @@ uniform float frequency_multiplier : hint_range(1.0, 2.0, 0.01);
 uniform float wind_direction_degrees : hint_range(0, 360, 0.5);
 uniform float wind_direction_increment : hint_range(0, 90, 0.5);
 
-uniform int wave_count : hint_range(0, 32, 1);
+uniform int wave_count : hint_range(0, 50, 1);
 
 float phase(float speed, float frequency) {
 	return speed * frequency;
-}
-
-float steepness(float base_stepness, float frequency, float amplitude) {
-	return base_stepness / frequency * amplitude;
 }
 
 float wave(vec2 position, vec2 normalized_direction, float frequency, float time, float phase) {
@@ -32,21 +38,21 @@ vec2 direction(float degree) {
 }
 
 vec3 sharp_euler_sine_wave(float amplitude, float wave) {
-	return vec3(0.0, amplitude * pow(E, max_peak * sin(wave) - 1.0), 0.0);
+	return vec3(0.0, amplitude * pow(E, max_peak * sin(wave) - peak_offset), 0.0);
 }
 
 vec3 sharp_euler_sine_partial_derivative(float frequency, vec2 normalized_direction, float amplitude, float wave) {
-	vec2 derivative = frequency * normalized_direction * amplitude * max_peak * pow(E, max_peak * sin(wave) - 1.0) * cos(wave);
+	vec2 derivative = frequency * normalized_direction * amplitude * max_peak * pow(E, max_peak * sin(wave) - peak_offset) * cos(wave);
 	return vec3(derivative.x, 0.0, derivative.y);
 }
 
 void fragment() {
 	float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
 	
-	RIM = 0.2;
-	METALLIC = 0.0;
-	ALBEDO = vec3(0.1, 0.3, 0.5);
-	ROUGHNESS = 0.01 * (1.0 - fresnel);
+	RIM = rim;
+	ALBEDO = albedo;
+	METALLIC = metallic;
+	ROUGHNESS = roughness * (1.0 - fresnel);
 }
 
 void vertex() {
@@ -86,4 +92,3 @@ void vertex() {
 	// Local coords vertex y starts in zero so we can do this
 	VERTEX += vertex_accumulator;
 }
-
