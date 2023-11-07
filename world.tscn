@@ -15,14 +15,14 @@ shader_parameter/wave_type = 1
 shader_parameter/wind_directions = PackedInt32Array(35, 170, 85, -79)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_lqahc"]
-size = Vector2(50, 50)
+size = Vector2(100, 100)
 subdivide_width = 1000
 subdivide_depth = 1000
 
 [node name="World" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.862858, 0.505447, 0, -0.505447, 0.862858, 0, 10.2334, 22.0296)
+transform = Transform3D(1, 0, 0, 0, 0.862858, 0.505447, 0, -0.505447, 0.862858, 10.6353, 10.2334, 22.0296)
 
 [node name="Water" type="MeshInstance3D" parent="."]
 material_override = SubResource("ShaderMaterial_7gokt")

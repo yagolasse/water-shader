@@ -29,37 +29,35 @@ float steepness(float base_stepness, float frequency, float amplitude) {
 	return base_stepness / frequency * amplitude;
 }
 
+float wave(vec2 position, vec2 normalized_direction, float frequency, float time, float phase) {
+	return dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
+}
+
 // Sine
-vec3 sine_wave_state(vec2 position, float time, float amplitude, float frequency, vec2 normalized_direction, float phase) {
-	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
+vec3 sine_wave_state(float amplitude, float wave) {
 	return vec3(0.0, amplitude * sin(wave), 0.0);
 }
 
-vec2 partial_derivative(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase) {
-	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
+vec2 partial_derivative(float frequency, vec2 normalized_direction, float amplitude, float wave) {
 	return frequency * normalized_direction * amplitude * cos(wave);
 }
 
 // Sharper Sine
-vec3 sharper_sine_wave_state(vec2 position, float time, float amplitude, float frequency, vec2 normalized_direction, float phase) {
-	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
+vec3 sharper_sine_wave_state(float amplitude, float wave) {
 	return vec3(0.0, 2.0 * amplitude * pow((sin(wave) + 1.0) / 2.0, exponent), 0.0);
 }
 
-vec2 sharper_sine_partial_derivative(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase) {
+vec2 sharper_sine_partial_derivative(float frequency, vec2 normalized_direction, float amplitude, float wave) {
 	vec2 partial = exponent * normalized_direction * frequency * amplitude;
-	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
 	float second_partial = pow((sin(wave) + 1.0) / 2.0, exponent - 1.0);
 	return frequency * normalized_direction * amplitude * second_partial * cos(wave);
 }
 
 // Gerstner
-vec3 gerstner_wave_state(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase, float steepness) {
-	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
-	float x = steepness * amplitude * normalized_direction.x * cos(wave);
-	float y = steepness * amplitude * normalized_direction.y * cos(wave);
+vec3 gerstner_wave_state(vec2 normalized_direction, float amplitude, float steepness, float wave) {
+	vec2 position = steepness * amplitude * normalized_direction * cos(wave);
 	float displacement = amplitude * sin(wave);
-	return vec3(x, displacement, y);
+	return vec3(position.x, displacement, position.y);
 }
 
 void fragment() {
@@ -83,18 +81,20 @@ void vertex() {
 		vec3 wave_state = vec3(0.0);
 		vec2 derivative = vec2(0.0);
 		
+		float wave = wave(position, normalized_direction, frequency, time, phase);
+		
 		switch(wave_type) {
 			case WAVE_TYPE_SINE:
-				wave_state = sine_wave_state(position, time, amplitudes[i], frequency, normalized_direction, phase);
-				derivative = partial_derivative(position, time, frequency, normalized_direction, amplitudes[i], phase);
+				wave_state = sine_wave_state(amplitudes[i], wave);
+				derivative = partial_derivative(frequency, normalized_direction, amplitudes[i], wave);
 				break;
 			case WAVE_TYPE_SHARPER_SINE: 
-				wave_state = sharper_sine_wave_state(position, time, amplitudes[i], frequency, normalized_direction, phase);
-				derivative = sharper_sine_partial_derivative(position, time, frequency, normalized_direction, amplitudes[i], phase);
+				wave_state = sharper_sine_wave_state(amplitudes[i], wave);
+				derivative = sharper_sine_partial_derivative(frequency, normalized_direction, amplitudes[i], wave);
 				break;
 			case WAVE_TYPE_GERSTNER: 
-				float stepness = steepness(steepnesses[i], frequency, amplitudes[i]);
-				wave_state = gerstner_wave_state(position, time, frequency, normalized_direction, amplitudes[i], phase, stepness);
+				float steepness = steepness(steepnesses[i], frequency, amplitudes[i]);
+				wave_state = gerstner_wave_state(normalized_direction, amplitudes[i], steepness, wave);
 				break;
 		}
 		vertex_accumulator += wave_state;
