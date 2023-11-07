@@ -8,6 +8,8 @@ const int WAVE_TYPE_GERSTNER = 2;
 
 uniform vec3 albedo: source_color;
 
+uniform float specular_size;
+uniform float specular_intensity : hint_range(0.0, 2.0, 0.01);
 uniform float exponent : hint_range(1.0, 4.0, 0.25);
 uniform float speeds[MAX_WAVE_COUNT];
 uniform float amplitudes[MAX_WAVE_COUNT];
@@ -16,6 +18,8 @@ uniform float steepnesses[MAX_WAVE_COUNT];
 
 uniform int wave_type : hint_range(0, 2, 1) = 0;
 uniform int wind_directions[MAX_WAVE_COUNT];
+
+varying vec3 normal;
 
 float frequency(float wavelength) {
 	return 2.0 / wavelength;
@@ -74,6 +78,12 @@ vec3 gerstner_partial_derivative(vec2 normalized_direction, float amplitude, flo
 	return vec3(derivative.x, displacement, derivative.y);
 }
 
+void light() {
+	vec3 halfway = normalize(LIGHT + VIEW);
+	float clamped_direction = clamp(dot(halfway, NORMAL), 0.0, 1.0);
+	SPECULAR_LIGHT = ALBEDO + LIGHT_COLOR * pow(clamped_direction * specular_intensity, specular_size);
+}
+
 void fragment() {
 	ALBEDO = albedo;
 }
@@ -117,5 +127,7 @@ void vertex() {
 	NORMAL = normalize(vec3(-normal_accumulator.x, 1.0 - normal_accumulator.y, -normal_accumulator.z));
 	// Local coords vertex y starts in zero so we can do this
 	VERTEX += vertex_accumulator;
+	
+	normal = NORMAL;
 }
 
