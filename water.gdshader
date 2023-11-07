@@ -2,13 +2,19 @@ shader_type spatial;
 
 const int MAX_WAVE_COUNT = 4;
 
+const int WAVE_TYPE_SINE = 0;
+const int WAVE_TYPE_SHARPER_SINE = 1;
+const int WAVE_TYPE_GERSTNER = 2;
+
 uniform vec3 albedo: source_color;
 
 uniform float exponent : hint_range(1.0, 4.0, 0.25);
 uniform float speeds[MAX_WAVE_COUNT];
 uniform float amplitudes[MAX_WAVE_COUNT];
 uniform float wavelengths[MAX_WAVE_COUNT];
+uniform float steepnesses[MAX_WAVE_COUNT];
 
+uniform int wave_type : hint_range(0, 2, 1) = 0;
 uniform int wind_directions[MAX_WAVE_COUNT];
 
 float frequency(float wavelength) {
@@ -19,14 +25,14 @@ float phase(float speed, float wavelength) {
 	return speed * 2.0 / wavelength;
 }
 
-float sine_wave_state(vec2 position, float time, float amplitude, float frequency, vec2 normalized_direction, float phase) {
-	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
-	return amplitude * sin(wave);
+float steepness(float base_stepness, float frequency, float amplitude) {
+	return base_stepness / frequency * amplitude;
 }
 
-float sharper_sine_wave_state(vec2 position, float time, float amplitude, float frequency, vec2 normalized_direction, float phase) {
+// Sine
+vec3 sine_wave_state(vec2 position, float time, float amplitude, float frequency, vec2 normalized_direction, float phase) {
 	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
-	return 2.0 * amplitude * pow((sin(wave) + 1.0) / 2.0, exponent);
+	return vec3(0.0, amplitude * sin(wave), 0.0);
 }
 
 vec2 partial_derivative(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase) {
@@ -34,11 +40,26 @@ vec2 partial_derivative(vec2 position, float time, float frequency, vec2 normali
 	return frequency * normalized_direction * amplitude * cos(wave);
 }
 
-vec2 sharper_partial_derivative(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase) {
+// Sharper Sine
+vec3 sharper_sine_wave_state(vec2 position, float time, float amplitude, float frequency, vec2 normalized_direction, float phase) {
+	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
+	return vec3(0.0, 2.0 * amplitude * pow((sin(wave) + 1.0) / 2.0, exponent), 0.0);
+}
+
+vec2 sharper_sine_partial_derivative(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase) {
 	vec2 partial = exponent * normalized_direction * frequency * amplitude;
 	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
 	float second_partial = pow((sin(wave) + 1.0) / 2.0, exponent - 1.0);
 	return frequency * normalized_direction * amplitude * second_partial * cos(wave);
+}
+
+// Gerstner
+vec3 gerstner_wave_state(vec2 position, float time, float frequency, vec2 normalized_direction, float amplitude, float phase, float steepness) {
+	float wave = dot(normalized_direction, vec2(position.x, position.y)) * frequency + time * phase;
+	float x = steepness * amplitude * normalized_direction.x * cos(wave);
+	float y = steepness * amplitude * normalized_direction.y * cos(wave);
+	float displacement = amplitude * sin(wave);
+	return vec3(x, displacement, y);
 }
 
 void fragment() {
@@ -46,7 +67,7 @@ void fragment() {
 }
 
 void vertex() {
-	float vertex_y_accumulator = 0.0;
+	vec3 vertex_accumulator = vec3(0.0);
 	vec3 normal_accumulator = vec3(0.0);
 	
 	float time = TIME;
@@ -58,13 +79,30 @@ void vertex() {
 		vec2 normalized_direction = normalize(direction);
 		float frequency = frequency(wavelengths[i]);
 		float phase = phase(speeds[i], wavelengths[i]);
-		float sine_wave_state = sharper_sine_wave_state(position, time, amplitudes[i], frequency, normalized_direction, phase);
-		vec2 partial_derivative = sharper_partial_derivative(position, time, frequency, normalized_direction, amplitudes[i], phase);
-		vertex_y_accumulator += sine_wave_state;
-		normal_accumulator += vec3(partial_derivative.x, partial_derivative.y, 0);
+		
+		vec3 wave_state = vec3(0.0);
+		vec2 derivative = vec2(0.0);
+		
+		switch(wave_type) {
+			case WAVE_TYPE_SINE:
+				wave_state = sine_wave_state(position, time, amplitudes[i], frequency, normalized_direction, phase);
+				derivative = partial_derivative(position, time, frequency, normalized_direction, amplitudes[i], phase);
+				break;
+			case WAVE_TYPE_SHARPER_SINE: 
+				wave_state = sharper_sine_wave_state(position, time, amplitudes[i], frequency, normalized_direction, phase);
+				derivative = sharper_sine_partial_derivative(position, time, frequency, normalized_direction, amplitudes[i], phase);
+				break;
+			case WAVE_TYPE_GERSTNER: 
+				float stepness = steepness(steepnesses[i], frequency, amplitudes[i]);
+				wave_state = gerstner_wave_state(position, time, frequency, normalized_direction, amplitudes[i], phase, stepness);
+				break;
+		}
+		vertex_accumulator += wave_state;
+		normal_accumulator += vec3(derivative.x, derivative.y, 0);
 	}
 
 	NORMAL = normalize(vec3(-normal_accumulator.x, 1.0, -normal_accumulator.y));
-	VERTEX.y = vertex_y_accumulator;
+	// Local coords vertex y starts in zero so we can do this
+	VERTEX += vertex_accumulator;
 }
 

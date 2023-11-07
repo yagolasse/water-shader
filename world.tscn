@@ -10,6 +10,8 @@ shader_parameter/exponent = 4.0
 shader_parameter/speeds = PackedFloat32Array(5.631, 8.665, 3.95, 3.575)
 shader_parameter/amplitudes = PackedFloat32Array(0.7, 0.735, 0.47, 0.485)
 shader_parameter/wavelengths = PackedFloat32Array(9.12, 9.66, 8.805, 16.835)
+shader_parameter/steepnesses = PackedFloat32Array(0.4, 0.8, 0.3, 0.5)
+shader_parameter/wave_type = 1
 shader_parameter/wind_directions = PackedInt32Array(35, 170, 85, -79)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_lqahc"]
