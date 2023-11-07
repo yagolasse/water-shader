@@ -5,30 +5,31 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_7gokt"]
 render_priority = 0
 shader = ExtResource("1_awqgb")
-shader_parameter/albedo = Color(0, 0.65098, 0.866667, 1)
-shader_parameter/specular_size = 50.0
-shader_parameter/specular_intensity = 1.0
-shader_parameter/exponent = 4.0
-shader_parameter/speeds = PackedFloat32Array(5.631, 8.665, 3.95, 3.575)
-shader_parameter/amplitudes = PackedFloat32Array(1.5, 1.605, 0.47, 0.485)
-shader_parameter/wavelengths = PackedFloat32Array(17.45, 8.58, 5.825, 17.585)
-shader_parameter/steepnesses = PackedFloat32Array(0.12, 0.42, 0.04, 0.1)
-shader_parameter/wave_type = 0
-shader_parameter/wind_directions = PackedInt32Array(0, 5, -12, 15)
+shader_parameter/max_peak = 1.8
+shader_parameter/wave_drag = 8.9
+shader_parameter/initial_speed = 4.5
+shader_parameter/speed_multiplier = 0.92
+shader_parameter/initial_amplitude = 1.159
+shader_parameter/amplitude_multiplier = 0.75
+shader_parameter/initial_frequency = 0.105
+shader_parameter/frequency_multiplier = 1.18
+shader_parameter/wind_direction_degrees = 223.0
+shader_parameter/wind_direction_increment = 26.5
+shader_parameter/wave_count = 8
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_lqahc"]
-size = Vector2(100, 100)
-subdivide_width = 100
-subdivide_depth = 100
+size = Vector2(500, 500)
+subdivide_width = 1000
+subdivide_depth = 1000
 
 [node name="World" type="Node3D"]
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.191342, 0.46194, 0, 0.92388, 0.382684, -0.5, 0.331414, -0.800103, 0, 21.7923, 0)
+
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.862858, 0.505447, 0, -0.505447, 0.862858, 10.6353, 10.2334, 22.0296)
+transform = Transform3D(0.989016, 0.0345054, -0.143725, 0, 0.97237, 0.233445, 0.147809, -0.230881, 0.961689, -25.135, 17.9, 225.015)
 
 [node name="Water" type="MeshInstance3D" parent="."]
 material_override = SubResource("ShaderMaterial_7gokt")
 mesh = SubResource("PlaneMesh_lqahc")
-
-[node name="SunLight" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.325398, -0.869461, 0.371692, 0.825453, 0.452936, 0.336863, -0.461241, 0.1972, 0.865083, 0, 15.0347, 0)
