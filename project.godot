@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 project/assembly_name="water-shader"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/water-shader/plugin.cfg")
+
 [filesystem]
 
 import/fbx/enabled=false

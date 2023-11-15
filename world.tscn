@@ -1,38 +1,35 @@
-[gd_scene load_steps=4 format=3 uid="uid://bul763k6bjokv"]
+[gd_scene load_steps=7 format=3 uid="uid://bul763k6bjokv"]
 
-[ext_resource type="Shader" path="res://water.gdshader" id="1_awqgb"]
+[ext_resource type="Material" uid="uid://cdi6tiai78bvy" path="res://addons/water-shader/water_material.tres" id="1_fwmbs"]
+[ext_resource type="PlaneMesh" uid="uid://djg54c7xycg2p" path="res://addons/water-shader/water_mesh.tres" id="2_kgd2k"]
+[ext_resource type="Script" path="res://addons/water-shader/water_body.gd" id="3_v6w28"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_7gokt"]
-render_priority = 0
-shader = ExtResource("1_awqgb")
-shader_parameter/albedo = Color(0, 0.0745098, 0.164706, 1)
-shader_parameter/rim = 0.2
-shader_parameter/roughness = 0.205
-shader_parameter/metallic = 0.0
-shader_parameter/max_peak = 1.4
-shader_parameter/peak_offset = 0.6
-shader_parameter/wave_drag = 5.1
-shader_parameter/initial_speed = 4.5
-shader_parameter/speed_multiplier = 0.92
-shader_parameter/initial_amplitude = 1.182
-shader_parameter/amplitude_multiplier = 0.75
-shader_parameter/initial_frequency = 0.109
-shader_parameter/frequency_multiplier = 1.18
-shader_parameter/wind_direction_degrees = 220.0
-shader_parameter/wind_direction_increment = 33.5
-shader_parameter/wave_count = 32
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_gfsl5"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_lqahc"]
-size = Vector2(500, 500)
-subdivide_width = 1000
-subdivide_depth = 1000
+[sub_resource type="Sky" id="Sky_yew6n"]
+sky_material = SubResource("ProceduralSkyMaterial_gfsl5")
+
+[sub_resource type="Environment" id="Environment_hd6pw"]
+background_mode = 2
+sky = SubResource("Sky_yew6n")
+tonemap_mode = 2
+glow_enabled = true
 
 [node name="World" type="Node3D"]
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.982935, 0.090582, -0.160103, 3.03569e-16, 0.870356, 0.492423, 0.183951, -0.484021, 0.855503, -57.115, 28.05, 252.505)
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hd6pw")
 
-[node name="Water" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.915411, 0)
-material_override = SubResource("ShaderMaterial_7gokt")
-mesh = SubResource("PlaneMesh_lqahc")
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.191343, 0.461943, 0, 0.92388, 0.382683, -0.500003, 0.331413, -0.800101, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WaterBody" type="MeshInstance3D" parent="."]
+material_override = ExtResource("1_fwmbs")
+mesh = ExtResource("2_kgd2k")
+script = ExtResource("3_v6w28")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.93358, 0.358368, 0, -0.358368, 0.93358, -2.57, 18, 247.14)

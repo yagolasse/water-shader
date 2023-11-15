@@ -1,0 +1,23 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cdi6tiai78bvy"]
+
+[ext_resource type="Shader" path="res://addons/water-shader/water_body.gdshader" id="1_temtb"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_temtb")
+shader_parameter/albedo = Color(0, 0.0745098, 0.164706, 1)
+shader_parameter/rim = 0.2
+shader_parameter/roughness = 0.19
+shader_parameter/metallic = 0.0
+shader_parameter/max_peak = 1.4
+shader_parameter/peak_offset = 0.6
+shader_parameter/wave_drag = 5.1
+shader_parameter/initial_speed = 4.5
+shader_parameter/speed_multiplier = 0.92
+shader_parameter/initial_amplitude = 0.5
+shader_parameter/amplitude_multiplier = 0.75
+shader_parameter/initial_frequency = 0.148
+shader_parameter/frequency_multiplier = 1.19
+shader_parameter/wind_direction_degrees = 220.0
+shader_parameter/wind_direction_increment = 33.5
+shader_parameter/wave_count = 8

@@ -22,7 +22,7 @@ uniform float frequency_multiplier : hint_range(1.0, 2.0, 0.01);
 uniform float wind_direction_degrees : hint_range(0, 360, 0.5);
 uniform float wind_direction_increment : hint_range(0, 90, 0.5);
 
-uniform int wave_count : hint_range(0, 50, 1);
+uniform int wave_count : hint_range(0, 1000, 1);
 
 float phase(float speed, float frequency) {
 	return speed * frequency;
@@ -48,7 +48,7 @@ vec3 sharp_euler_sine_partial_derivative(float frequency, vec2 normalized_direct
 
 void fragment() {
 	float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
-	
+
 	RIM = rim;
 	ALBEDO = albedo;
 	METALLIC = metallic;
@@ -58,32 +58,32 @@ void fragment() {
 void vertex() {
 	vec3 vertex_accumulator = vec3(0.0);
 	vec3 normal_accumulator = vec3(0.0);
-	
+
 	float time = TIME;
 	vec2 position = VERTEX.xz;
-	
+
 	float speed = initial_speed;
 	float amplitude = initial_amplitude;
 	float frequency = initial_frequency;
 	float wind_direction = wind_direction_degrees;
-	
+
 	vec3 previous_derivative = vec3(0.0);
-	
+
 	for (int i = 0; i < wave_count; i++) {
 		vec2 normalized_direction = normalize(direction(wind_direction));
 		float phase = phase(speed, frequency);
 		float wave = wave(position, normalized_direction, frequency, time, phase);
-		
+
 		vec3 wave_state = sharp_euler_sine_wave(amplitude, wave);
 		vec3 derivative = sharp_euler_sine_partial_derivative(frequency, normalized_direction, amplitude, wave);
-		
+
 		position += normalized_direction * -derivative.xz * amplitude * wave_drag;
-		
+
 		speed *= speed_multiplier;
 		amplitude *= amplitude_multiplier;
 		frequency *= frequency_multiplier;
 		wind_direction += wind_direction_increment;
-		
+
 		vertex_accumulator += wave_state;
 		normal_accumulator += derivative;
 	}
